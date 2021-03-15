@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="eng">
+<head>
+    <title>Procure pelo CEP</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <div id="topo" class="container-fluid p-3 border bg-info text-white">
+        <h1>Procure pelo CEP</h1>
+    </div>
+    <div id="app" class="container-fluid">
+        <p></p>
+        <form class="needs-validation" novalidate>
+            <div class="form-inline">
+                <label for="cep" class="text-dark mr-sm-2">CEP:</label>
+                <input id="campoCep" type="text" class="form-control mr-sm-2" placeholder="00.000-000" size="8" maxlength="8" required></input>
+                <div class="valid-feedback"></div>
+                <div class="invalid-feedback">Insira um CEP!</div>
+                <button type="button" id="btnBuscar" class="btn btn-success" onclick="validaCep()">PESQUISAR</button>
+            </div>
+        </form>
+        <p></p>
+        <form action="/action_page.php">
+            <div class="form-group">
+                <label for="end">Logradouro:</label>
+                <input id="log" type="text" class="form-control"></input>
+            </div>
+            <div class="form-group">
+                <label for="bairro">Bairro:</label>
+                <input id="bairro" type="text" class="form-control"></input>
+            </div>
+            <div class="form-row">
+                <div class="col">
+                    <label for="cidade">Cidade:</label>
+                    <input id="cidade" type="text" class="form-control"></input>
+                </div>
+                <div class="col-sm-2">
+                    <label for="uf">UF:</label>
+                    <input id="uf" type="text" class="form-control"></input>
+                </div>
+            </div>
+        </form>
+    </div>     
+
+    <!-- JAVASCRIPT -->
+    <script type="text/javascript">
+
+    
+        var cepCampo = document.getElementById("campoCep");
+        // Valida a entrada digitada pelo Usuario
+        function validaCep(){
+            cep = cepCampo.value.replace(".","");
+            cep = cep.replace("-","");
+
+            // Verifica se tem menos de 8 digitos
+            if (cep.length != 8){
+                alert("Insira o CEP correto!")
+                cepCampo.value = "";
+                document.getElementById("campoCep").focus();
+            }else{
+                buscaCep(cep);
+            }
+        };
+
+        // busca o Cep no Servidor e retorna os dados
+        function buscaCep(cep){
+            var url = "http://viacep.com.br/ws/" + cep + "/json";
+            var xhr = new XMLHttpRequest();
+            
+            xhr.open("GET", url, true);
+            xhr.send(null);
+            
+            xhr.onreadystatechange = function(){
+                if( xhr.readyState == 4 ){
+                    if( xhr.status == 200){
+                        var resp = JSON.parse(xhr.responseText);
+                        console.log(resp);
+                        if (resp.erro == true){
+                            alert("Insira um CEP válido");
+                            cepCampo.value = "";
+                            document.getElementById("campoCep").focus();
+                        }else{
+                            preencheCampos(resp);
+                        }
+                    }else{
+                        alert("Servidor Ocupado!\nTente Mais Tarde");
+                    }
+                }
+            }
+        };
+
+        // Função que preenche os campos
+        function preencheCampos(resp){
+            document.getElementById("log").value = resp.logradouro;
+            document.getElementById("bairro").value = resp.bairro;
+            document.getElementById("cidade").value = resp.localidade;
+            document.getElementById("uf").value = resp.uf;
+        };
+    </script>
+</body>
+
+</html>
